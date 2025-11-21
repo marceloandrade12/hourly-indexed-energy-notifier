@@ -58,7 +58,7 @@ async function startup() {
   // Initial download
   try {
     // Download the CSV file to cache path
-    // await fetcher.downloadCsv(CSV_URL, CACHE_PATH);
+    await fetcher.downloadCsv(CSV_URL, CACHE_PATH);
     // Run the hourly check immediately after download
     await runHourlyCheck();
   } catch (err) {
