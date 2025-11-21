@@ -1,0 +1,21 @@
+{
+  "name": "hourly-indexed-energy-notifier",
+  "version": "1.0.0",
+  "description": "Notify via Telegram energy prices indexed hourly.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:dev": "NODE_ENV=development node src/index.js"
+  },
+  "dependencies": {
+    "cspell": "^9.3.2",
+    "csvjson-csv2json": "^5.0.6",
+    "dotenv": "^17.2.3",
+    "luxon": "^3.7.2",
+    "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
+    "pretty-js-log": "^1.2.0",
+    "undici": "^7.16.0"
+  }
+}

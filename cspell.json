@@ -1,0 +1,16 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "mkdirp",
+    "tsmerge",
+    "githubusercontent",
+    "streetsidesoftware",
+    "vsmarketplacebadge",
+    "visualstudio",
+    "tarifario",
+    "opcao",
+    "intervalo"
+  ],
+  "ignorePaths": ["./src/message.js"]
+}
