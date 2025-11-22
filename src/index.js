@@ -65,9 +65,9 @@ async function startup() {
     log.error(`[ERROR]: startup - ${err.message}`);
   }
 
-  // Schedule daily CSV download at midnight
+  // Schedule daily CSV download at 22:00 every day
   cron.schedule(
-    "0 0 * * *",
+    "0 22 * * *",
     async () => {
       try {
         log.info(`[LOG]: startup - Daily CSV download started`);

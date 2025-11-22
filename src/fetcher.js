@@ -1,10 +1,16 @@
+import dotenv from "dotenv";
 import fs from "fs";
+import { DateTime } from "luxon";
 import path from "path";
 import { fetch } from "undici";
 import { getLogger } from "./logger.js";
 import { sendFileUpdatedMessage } from "./message.js";
+import parser from "./parser.js";
+
+dotenv.config();
 
 const log = getLogger();
+const TZ = process.env.TIMEZONE;
 
 async function downloadCsv(url, outPath) {
   log.info(`[LOG]: Downloading CSV from ${url} to ${outPath}`);
@@ -41,9 +47,27 @@ async function downloadCsv(url, outPath) {
 
   // Write to file
   log.info(`[LOG]: Writing CSV to ${outPath}`);
-  fs.writeFileSync(outPath, text, "utf8");
+  await fs.promises.writeFile(outPath, text, "utf8");
 
-  await sendFileUpdatedMessage();
+  const json = await parser.loadAndParse(outPath);
+
+  log.info(
+    `[LOG]: CSV downloaded and saved to ${outPath} with ${json.length} rows`
+  );
+
+  // Get current date and hour in specified timezone
+  const now = DateTime.now().setZone(TZ);
+  // Format date as dd/MM/yyyy
+  const today = now.toFormat("dd/MM/yyyy");
+
+  const todayPrices = parser.extractTodayPrices(json, today);
+
+  log.info(
+    `[LOG]: Extracted ${
+      Object.keys(todayPrices).length
+    } prices for today ${today}`
+  );
+  await sendFileUpdatedMessage(todayPrices);
 }
 
 export default { downloadCsv };

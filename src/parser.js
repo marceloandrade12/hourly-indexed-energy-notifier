@@ -98,4 +98,72 @@ const extractPrice = (rows, today, hour) => {
   return roundedAveragePrice;
 };
 
-export default { extractPrice, loadAndParse };
+const extractTodayPrices = (rows, today) => {
+  log.info(`[LOG]: extractTodayPrices - Extracting prices for ${today}`);
+  const tariffRows = rows.filter((r) => r.tarifario === TARIFF);
+
+  log.info(
+    `[LOG]: extractTodayPrices - Found ${tariffRows.length} rows for provider ${TARIFF}`
+  );
+
+  const optionRows = tariffRows.filter((r) => r.opcao === OPTION);
+
+  log.info(
+    `[LOG]: extractTodayPrices - Found ${optionRows.length} rows for option ${OPTION}`
+  );
+
+  const todayRows = optionRows.filter((r) => r.dia === today);
+
+  log.info(
+    `[LOG]: extractTodayPrices - Found ${todayRows.length} rows for date ${today}`
+  );
+
+  const prices = {};
+
+  for (let hour = 0; hour < 24; hour++) {
+    const hourStr = hour.toString().padStart(2, "0");
+    const currentHourRows = todayRows.filter((r) =>
+      r.intervalo.startsWith(`[${hourStr}:`)
+    );
+
+    log.info(
+      `[LOG]: extractTodayPrices - Found ${currentHourRows.length} rows for hour ${hour}:00`
+    );
+
+    const pricesForCurrentHour = currentHourRows.map((r) =>
+      parseFloat(r.col.replace(",", "."))
+    );
+
+    if (pricesForCurrentHour.length === 0) {
+      log.warn(
+        `[WARN]: extractTodayPrices - No price found for ${today} at ${hour}:00`
+      );
+      prices[hour] = null;
+      continue;
+    }
+
+    const averagePrice =
+      pricesForCurrentHour.reduce((a, b) => a + b, 0) /
+      pricesForCurrentHour.length;
+
+    const roundedAveragePrice = averagePrice?.toFixed(5);
+
+    if (isNaN(roundedAveragePrice)) {
+      log.warn(
+        `[WARN]: extractTodayPrices - Computed price is NaN for ${today} at ${hour}:00`
+      );
+      prices[hour] = null;
+      continue;
+    }
+
+    log.info(
+      `[LOG]: extractTodayPrices - Average price for ${today} at ${hour}:00 is ${roundedAveragePrice} €/kWh`
+    );
+
+    prices[hour] = roundedAveragePrice;
+  }
+
+  return prices;
+};
+
+export default { extractPrice, extractTodayPrices, loadAndParse };

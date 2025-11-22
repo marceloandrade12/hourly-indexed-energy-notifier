@@ -1,11 +1,21 @@
 import telegram from "./telegram.js";
 
+const lowPrice = 0.1;
+const highPrice = 0.1599;
+
 /**
  * Sends a notification message indicating that the CSV file has been successfully updated.
  * @returns {Promise} A promise that resolves when the message has been sent.
  */
-const sendFileUpdatedMessage = () => {
-  const text = "📥 O ficheiro CSV foi atualizado com sucesso.";
+const sendFileUpdatedMessage = (pricesForToday) => {
+  let text = "📥 O ficheiro CSV foi atualizado com sucesso. \nPara amanhã:\n";
+
+  for (const [index, price] of Object.entries(pricesForToday)) {
+    text += `\n`;
+    text += price < lowPrice ? "✅" : price < highPrice ? "🆗" : "⚠️";
+    text += `  Preço às ${index}:00 - ${price} €/kWh`;
+  }
+
   return telegram.sendMessage(text);
 };
 
@@ -16,9 +26,9 @@ const sendPriceNotFoundMessage = (date, hour) => {
 
 const sendPriceFoundMessage = (hour, price) => {
   let text = "";
-  if (price < 0.1) {
+  if (price < lowPrice) {
     text += "✅ Preço baixo! \n";
-  } else if (price < 0.1599) {
+  } else if (price < highPrice) {
     text += "🆗 Preço normal.\n";
   } else {
     text += "⚠️ Preço alto! \n";
