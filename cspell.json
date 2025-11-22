@@ -10,7 +10,14 @@
     "visualstudio",
     "tarifario",
     "opcao",
-    "intervalo"
+    "intervalo",
+    "Máquina",
+    "Aquecedor",
+    "Roupa",
+    "Lavar",
+    "Secar",
+    "Condicionado",
+    "Loiça"
   ],
   "ignorePaths": ["./src/message.js"]
 }

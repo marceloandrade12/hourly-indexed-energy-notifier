@@ -13,7 +13,11 @@ async function sendMessage(text) {
     // Prepare and send the request to Telegram API
     const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
     // Use URLSearchParams to encode the body
-    const body = new URLSearchParams({ chat_id: chat?.trim(), text });
+    const body = new URLSearchParams({
+      chat_id: chat?.trim(),
+      text,
+      parse_mode: "HTML",
+    });
     // Send the POST request
     await fetch(url, { method: "POST", body }).catch((err) => {
       console.log(`[ERROR]: sendMessage - ${err.message}`);

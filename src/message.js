@@ -1,3 +1,4 @@
+import { calculateCosts } from "./devices.js";
 import telegram from "./telegram.js";
 
 const lowPrice = 0.1;
@@ -13,7 +14,7 @@ const sendFileUpdatedMessage = (pricesForToday) => {
   for (const [index, price] of Object.entries(pricesForToday)) {
     text += `\n`;
     text += price < lowPrice ? "✅" : price < highPrice ? "🆗" : "⚠️";
-    text += `  Preço às ${index}:00 - ${price} €/kWh`;
+    text += `  Preço às ${index}:00 - ${price} € / kWh`;
   }
 
   return telegram.sendMessage(text);
@@ -27,13 +28,22 @@ const sendPriceNotFoundMessage = (date, hour) => {
 const sendPriceFoundMessage = (hour, price) => {
   let text = "";
   if (price < lowPrice) {
-    text += "✅ Preço baixo! \n";
+    text += "✅ Preço baixo! \n\n";
   } else if (price < highPrice) {
-    text += "🆗 Preço normal.\n";
+    text += "🆗 Preço normal.\n\n";
   } else {
-    text += "⚠️ Preço alto! \n";
+    text += "⚠️ Preço alto! \n\n";
   }
-  text += `⚡ Preço agora ${hour}:00 - ${price} €/kWh`;
+  text += `⚡ Preço agora ${hour}:00 - <b>${price} € / kWh</b>`;
+
+  // add devices cost message
+
+  text += `\n\n💡 <b>Custo estimado para 1 hora de uso:</b>\n`;
+
+  const costs = calculateCosts(price);
+  for (const device of costs) {
+    text += `\n${device.name} custará <b>${device.cost.toFixed(2)} €</b>.`;
+  }
   return telegram.sendMessage(text);
 };
 
