@@ -55,19 +55,20 @@ async function downloadCsv(url, outPath) {
     `[LOG]: CSV downloaded and saved to ${outPath} with ${json.length} rows`
   );
 
-  // Get current date and hour in specified timezone
-  const now = DateTime.now().setZone(TZ);
+  // Get tomorrow's date in specified timezone
+  // const now = DateTime.now().setZone(TZ);
+  const tomorrow = DateTime.now().setZone(TZ).plus({ days: 1 });
   // Format date as dd/MM/yyyy
-  const today = now.toFormat("dd/MM/yyyy");
+  const tomorrowFormatted = tomorrow.toFormat("dd/MM/yyyy");
 
-  const todayPrices = parser.extractTodayPrices(json, today);
+  const tomorrowPrices = parser.extractTodayPrices(json, tomorrowFormatted);
 
   log.info(
     `[LOG]: Extracted ${
-      Object.keys(todayPrices).length
-    } prices for today ${today}`
+      Object.keys(tomorrowPrices).length
+    } prices for tomorrow ${tomorrowFormatted}`
   );
-  await sendFileUpdatedMessage(todayPrices);
+  await sendFileUpdatedMessage(tomorrowPrices);
 }
 
 export default { downloadCsv };
