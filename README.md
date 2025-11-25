@@ -88,8 +88,15 @@ pm2 save
 pm2 status
 ```
 
-   
+## Notification Examples
 
+### Every Hour
+![HourlyExample](https://github.com/user-attachments/assets/fe026879-673e-455d-b839-d5e65b506c9c)
+
+### Every day at 22:00
+![22hExample](https://github.com/user-attachments/assets/12a702fc-90ef-42d6-8509-7bc29f8c1b2b)
+
+  
 ## Credits
 
 This project uses CSV data provided by **Tiago Felicia**:
