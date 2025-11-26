@@ -108,7 +108,14 @@ async function startup() {
   );
 
   // Schedule hourly price check at the start of every hour
-  cron.schedule("0 * * * *", runHourlyCheck, { timezone: TZ });
+  cron.schedule(
+    "0 * * * *",
+    async () => {
+      log.info(`[LOG]: startup - Scheduled hourly price check started`);
+      await runHourlyCheck();
+    },
+    { timezone: TZ }
+  );
 }
 
 startup();

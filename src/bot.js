@@ -28,7 +28,7 @@ export async function pollingLoop(onMessage) {
       // Parse the JSON response
       const data = await res.body.json();
       // Process each update
-      if (data.result.length > 0) {
+      if (data?.result?.length > 0) {
         for (const update of data.result) {
           // Update the offset to the next update ID
           offset = update.update_id + 1;
