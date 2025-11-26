@@ -1,31 +1,56 @@
 import { calculateCosts } from "./devices.js";
 import telegram from "./telegram.js";
+import { getTodayDateString, getTomorrowDateString } from "./utils.js";
 
 const lowPrice = 0.1;
 const highPrice = 0.1599;
 
-/**
- * Sends a notification message indicating that the CSV file has been successfully updated.
- * @returns {Promise} A promise that resolves when the message has been sent.
- */
-const sendFileUpdatedMessage = (pricesForToday) => {
-  let text = "📥 O ficheiro CSV foi atualizado com sucesso. \nPara amanhã:\n";
+const getTextFromPrices = (prices) => {
+  let text = "";
 
-  for (const [index, price] of Object.entries(pricesForToday)) {
-    text += `\n`;
-    text += price < lowPrice ? "✅" : price < highPrice ? "🆗" : "⚠️";
-    text += `  Preço às ${index}:00 - ${price} € / kWh`;
+  for (const [index, price] of Object.entries(prices)) {
+    if (price !== null && price !== undefined && !isNaN(price)) {
+      text += `\n`;
+      text += price < lowPrice ? "✅" : price < highPrice ? "🆗" : "⚠️";
+      text += `  Preço às ${index}:00 - ${price} € / kWh`;
+    }
   }
 
-  return telegram.sendMessage(text);
+  return text;
 };
 
-const sendPriceNotFoundMessage = (date, hour) => {
+const sendTomorrowPricesMessage = (
+  pricesForTomorrow,
+  beginText,
+  chatId = null
+) => {
+  const tomorrow = getTomorrowDateString();
+  let text = `${beginText} Para amanhã (${tomorrow}):\n`;
+  text += getTextFromPrices(pricesForTomorrow);
+  return telegram.sendMessage(text, chatId);
+};
+
+const sendTodayPricesMessage = (pricesForToday, chatId = null) => {
+  const today = getTodayDateString();
+  let text = `Para hoje (${today}):\n`;
+  text += getTextFromPrices(pricesForToday);
+  return telegram.sendMessage(text, chatId);
+};
+
+const sendFileUpdatedMessage = (pricesForTomorrow, chatId = null) => {
+  return sendTomorrowPricesMessage(
+    pricesForTomorrow,
+    "📥 O ficheiro CSV foi atualizado com sucesso. \n",
+    chatId
+  );
+};
+
+const sendPriceNotFoundMessage = (date, hour, chatId = null) => {
   const text = `⚠️ Preço não encontrado para ${date} ${hour}:00`;
-  return telegram.sendMessage(text);
+  return telegram.sendMessage(text, chatId);
 };
 
-const sendPriceFoundMessage = (hour, price) => {
+const sendPriceFoundMessage = (hour, price, chatId = null) => {
   let text = "";
   if (price < lowPrice) {
     text += "✅ Preço baixo! \n\n";
@@ -44,23 +69,36 @@ const sendPriceFoundMessage = (hour, price) => {
   for (const device of costs) {
     text += `\n${device.name} custará <b>${device.cost.toFixed(2)} €</b>.`;
   }
-  return telegram.sendMessage(text);
+  return telegram.sendMessage(text, chatId);
 };
 
-const sendErrorMessage = (message) => {
+const sendErrorMessage = (message, chatId = null) => {
   const text = `❌ Erro: ${message}`;
-  return telegram.sendMessage(text);
+  return telegram.sendMessage(text, chatId);
 };
 
-const sendCsvDownloadErrorMessage = (message) => {
+const sendCsvDownloadErrorMessage = (message, chatId = null) => {
   const text = `❌ Erro ao descarregar o ficheiro CSV: ${message}`;
-  return telegram.sendMessage(text);
+  return telegram.sendMessage(text, chatId);
+};
+
+const sendHelpMessage = (chatId = null) => {
+  const text =
+    `❓ Comandos disponíveis:\n` +
+    `/preco - Ver preço e custos atuais\n` +
+    `/hoje - Ver preços do dia\n` +
+    `/amanha - Ver preços de amanhã\n` +
+    `/ajuda - Mostrar esta mensagem de ajuda`;
+  return telegram.sendMessage(text, chatId);
 };
 
 export {
   sendCsvDownloadErrorMessage,
   sendErrorMessage,
   sendFileUpdatedMessage,
+  sendHelpMessage,
   sendPriceFoundMessage,
   sendPriceNotFoundMessage,
+  sendTodayPricesMessage,
+  sendTomorrowPricesMessage,
 };

@@ -1,11 +1,10 @@
 import dotenv from "dotenv";
 import fs from "fs";
-import { DateTime } from "luxon";
 import path from "path";
 import { fetch } from "undici";
 import { getLogger } from "./logger.js";
 import { sendFileUpdatedMessage } from "./message.js";
-import parser from "./parser.js";
+import { getTomorrowPrices } from "./utils.js";
 
 dotenv.config();
 
@@ -49,24 +48,12 @@ async function downloadCsv(url, outPath) {
   log.info(`[LOG]: Writing CSV to ${outPath}`);
   await fs.promises.writeFile(outPath, text, "utf8");
 
-  const json = await parser.loadAndParse(outPath);
+  log.info(`[LOG]: CSV downloaded and saved to ${outPath}`);
+
+  const tomorrowPrices = await getTomorrowPrices();
 
   log.info(
-    `[LOG]: CSV downloaded and saved to ${outPath} with ${json.length} rows`
-  );
-
-  // Get tomorrow's date in specified timezone
-  // const now = DateTime.now().setZone(TZ);
-  const tomorrow = DateTime.now().setZone(TZ).plus({ days: 1 });
-  // Format date as dd/MM/yyyy
-  const tomorrowFormatted = tomorrow.toFormat("dd/MM/yyyy");
-
-  const tomorrowPrices = parser.extractTodayPrices(json, tomorrowFormatted);
-
-  log.info(
-    `[LOG]: Extracted ${
-      Object.keys(tomorrowPrices).length
-    } prices for tomorrow ${tomorrowFormatted}`
+    `[LOG]: Extracted ${Object.keys(tomorrowPrices).length} prices for tomorrow`
   );
   await sendFileUpdatedMessage(tomorrowPrices);
 }

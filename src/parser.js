@@ -98,6 +98,12 @@ const extractPrice = (rows, today, hour) => {
   return roundedAveragePrice;
 };
 
+/**
+ * Extract prices for the entire day
+ * @param {Array<Object>} rows
+ * @param {string} today
+ * @returns {Object}
+ */
 const extractTodayPrices = (rows, today) => {
   log.info(`[LOG]: extractTodayPrices - Extracting prices for ${today}`);
   const tariffRows = rows.filter((r) => r.tarifario === TARIFF);

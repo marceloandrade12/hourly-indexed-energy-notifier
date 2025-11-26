@@ -1,15 +1,24 @@
 import dotenv from "dotenv";
-import { DateTime } from "luxon";
 import cron from "node-cron";
+import { pollingLoop } from "./bot.js";
 import fetcher from "./fetcher.js";
 import { getLogger } from "./logger.js";
 import {
   sendCsvDownloadErrorMessage,
   sendErrorMessage,
+  sendHelpMessage,
   sendPriceFoundMessage,
   sendPriceNotFoundMessage,
+  sendTodayPricesMessage,
+  sendTomorrowPricesMessage,
 } from "./message.js";
 import parser from "./parser.js";
+import {
+  getCurrentHour,
+  getTodayDateString,
+  getTodayPrices,
+  getTomorrowPrices,
+} from "./utils.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -22,13 +31,31 @@ const CSV_URL = process.env.CSV_URL;
 const CACHE_PATH = process.env.CACHE_PATH;
 const TZ = process.env.TIMEZONE;
 
-async function runHourlyCheck() {
-  // Get current date and hour in specified timezone
-  const now = DateTime.now().setZone(TZ);
-  // Format date as dd/MM/yyyy
-  const today = now.toFormat("dd/MM/yyyy");
-  // Get current hour (0-23)
-  const hour = now.hour;
+pollingLoop(async (msg, chat) => {
+  log.info(`[BOT]: Message received in chat ${chat}: ${msg}`);
+  if (msg.toLowerCase() === "/preco" || msg.toLowerCase() === "/price") {
+    runHourlyCheck([chat]);
+  }
+
+  if (msg.toLowerCase() === "/hoje" || msg.toLowerCase() === "/today") {
+    const todayPrices = await getTodayPrices();
+    return sendTodayPricesMessage(todayPrices, [chat]);
+  }
+
+  if (msg.toLowerCase() === "/amanha" || msg.toLowerCase() === "/tomorrow") {
+    const tomorrowPrices = await getTomorrowPrices();
+    return sendTomorrowPricesMessage(tomorrowPrices, "", [chat]);
+  }
+
+  if (msg.toLowerCase() === "/help" || msg.toLowerCase() === "/ajuda") {
+    log.info(`[BOT]: Sending help message to chat ${chat}`);
+    return sendHelpMessage([chat]);
+  }
+});
+
+async function runHourlyCheck(chatId = undefined) {
+  const today = getTodayDateString();
+  const hour = getCurrentHour();
 
   log.info(`[LOG]: runHourlyCheck - for ${today} ${hour}:00`);
 
@@ -47,10 +74,10 @@ async function runHourlyCheck() {
     }
 
     log.info(`[LOG]: runHourlyCheck - Price now (${hour}:00): ${price} €/kWh`);
-    await sendPriceFoundMessage(hour, price);
+    await sendPriceFoundMessage(hour, price, chatId);
   } catch (err) {
     log.error(`[ERROR]: runHourlyCheck - ${err.message}`);
-    await sendErrorMessage(err.message);
+    await sendErrorMessage(err.message, chatId);
   }
 }
 
