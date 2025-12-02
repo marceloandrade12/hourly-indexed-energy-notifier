@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
 import cron from "node-cron";
 import { pollingLoop } from "./bot.js";
+import { config } from "./config.js";
 import fetcher from "./fetcher.js";
 import { getLogger } from "./logger.js";
 import {
@@ -20,16 +20,8 @@ import {
   getTomorrowPrices,
 } from "./utils.js";
 
-// Load environment variables from .env file
-dotenv.config();
-
 // Initialize logger
 const log = getLogger();
-
-// Configuration from environment variables
-const CSV_URL = process.env.CSV_URL;
-const CACHE_PATH = process.env.CACHE_PATH;
-const TZ = process.env.TIMEZONE;
 
 pollingLoop(async (msg, chat) => {
   log.info(`[BOT]: Message received in chat ${chat}: ${msg}`);
@@ -53,7 +45,10 @@ pollingLoop(async (msg, chat) => {
   }
 
   if (msg.toLowerCase() === "/atualizar" || msg.toLowerCase() === "/update") {
-    return await fetcher.downloadCsv(CSV_URL, CACHE_PATH);
+    return await fetcher.downloadCsv(
+      config.csv.sourceUrl,
+      config.csv.cachePath
+    );
   }
 });
 
@@ -65,7 +60,7 @@ async function runHourlyCheck(chatId = undefined) {
 
   try {
     // Load and parse the cached CSV file
-    const json = await parser.loadAndParse(CACHE_PATH);
+    const json = await parser.loadAndParse(config.csv.cachePath);
 
     log.info(`[LOG]: runHourlyCheck - json parsed successfully`);
 
@@ -89,7 +84,7 @@ async function startup() {
   // Initial download
   try {
     // Download the CSV file to cache path
-    await fetcher.downloadCsv(CSV_URL, CACHE_PATH);
+    await fetcher.downloadCsv(config.csv.sourceUrl, config.csv.cachePath);
     // Run the hourly check immediately after download
     await runHourlyCheck();
   } catch (err) {
@@ -102,13 +97,13 @@ async function startup() {
     async () => {
       try {
         log.info(`[LOG]: startup - Daily CSV download started`);
-        await fetcher.downloadCsv(CSV_URL, CACHE_PATH);
+        await fetcher.downloadCsv(config.csv.sourceUrl, config.csv.cachePath);
       } catch (err) {
         log.error(`[ERROR]: startup - Daily CSV download - ${err.message}`);
         await sendCsvDownloadErrorMessage(err.message);
       }
     },
-    { timezone: TZ }
+    { timezone: config.timezone }
   );
 
   // Schedule hourly price check at the start of every hour
@@ -118,7 +113,7 @@ async function startup() {
       log.info(`[LOG]: startup - Scheduled hourly price check started`);
       await runHourlyCheck();
     },
-    { timezone: TZ }
+    { timezone: config.timezone }
   );
 }
 

@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fetch } from "undici";
@@ -6,10 +5,7 @@ import { getLogger } from "./logger.js";
 import { sendFileUpdatedMessage } from "./message.js";
 import { getTomorrowPrices } from "./utils.js";
 
-dotenv.config();
-
 const log = getLogger();
-const TZ = process.env.TIMEZONE;
 
 async function downloadCsv(url, outPath) {
   log.info(`[LOG]: Downloading CSV from ${url} to ${outPath}`);

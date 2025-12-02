@@ -9,10 +9,10 @@ monitoring.
 
 - Fetches and converts a remote CSV with hourly indexed electricity prices.
 - Filters data for provided configuration in `.env`
-- **Updates the CSV once per day at 22:00**, storing it locally to avoid making unnecessary requests.
+- **Updates the CSV once per day at 16:00**, storing it locally to avoid making unnecessary requests.
 - **Sends hourly Telegram notifications** with:
   - The current hour's energy price.
-  - Estimated energy cost for selected household appliances (heater, AC, washing machine, dryer, dishwasher).
+  - Estimated energy cost for selected household appliances (configurable via `.env`).
 - **Interactive Telegram bot** that responds to user commands:
   - `/preco` or `/price` - Get current price and estimated costs
   - `/hoje` or `/today` - View all prices for today
@@ -78,6 +78,9 @@ Available Energy Options ( available on CSV ) - `OPTION`
     TIMEZONE=Europe/Lisbon
     TARIFF=EDP Indexada Horária
     OPTION=Simples
+    # Optional: Customize devices for cost estimation (JSON format)
+    # If not provided, default devices will be used
+    DEVICES=[{"name":"🌡️ Aquecedor","power":500},{"name":"❄️ Ar Condicionado","power":1200},{"name":"💽 Máquina Lavar Roupa","power":800},{"name":"💽 Máquina Secar Roupa","power":650},{"name":"🍽️ Máquina Lavar Loiça","power":1000}]
 
 ## Running the Project
 
@@ -101,7 +104,7 @@ pm2 status
 
 ![HourlyExample](https://github.com/user-attachments/assets/fe026879-673e-455d-b839-d5e65b506c9c)
 
-### Every day at 22:00
+### Every day at 16:00
 
 ![22hExample](https://github.com/user-attachments/assets/12a702fc-90ef-42d6-8509-7bc29f8c1b2b)
 
@@ -112,6 +115,7 @@ The bot responds to the following commands:
 - `/preco` or `/price` - Get the current hour's energy price and estimated costs for household appliances
 - `/hoje` or `/today` - View all prices for today with visual indicators (✅ low, 🆗 normal, ⚠️ high)
 - `/amanha` or `/tomorrow` - View all prices for tomorrow
+- `/atualizar` or `/update` - Manually update the CSV file
 - `/ajuda` or `/help` - Display available commands
 
 Simply send any of these commands to the bot via Telegram to get an immediate response.

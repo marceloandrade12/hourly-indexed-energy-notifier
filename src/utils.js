@@ -1,12 +1,9 @@
-import dotenv from "dotenv";
 import { DateTime } from "luxon";
+import { config } from "./config.js";
 import parser from "./parser.js";
 
-// Load environment variables from .env file
-dotenv.config();
-
-const TZ = process.env.TIMEZONE;
-const CACHE_PATH = process.env.CACHE_PATH;
+const TZ = config.timezone;
+const CACHE_PATH = config.csv.cachePath;
 
 /**
  * Get today's date in dd/MM/yyyy format

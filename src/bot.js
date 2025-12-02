@@ -1,11 +1,9 @@
-import dotenv from "dotenv";
 import { request } from "undici";
+import { config } from "./config.js";
 import { getLogger } from "./logger.js";
 
-dotenv.config();
-
 const log = getLogger();
-const TOKEN = process.env.TELEGRAM_TOKEN;
+const TOKEN = config.telegram.token;
 
 const API = `https://api.telegram.org/bot${TOKEN}`;
 

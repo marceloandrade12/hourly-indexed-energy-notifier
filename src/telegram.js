@@ -1,11 +1,9 @@
-import dotenv from "dotenv";
+import { config } from "./config.js";
 import { getLogger } from "./logger.js";
 
-dotenv.config();
-
 const log = getLogger();
-const TOKEN = process.env.TELEGRAM_TOKEN;
-const CHAT = process.env.TELEGRAM_CHAT_ID?.split(",") || [];
+const TOKEN = config.telegram.token;
+const CHAT = config.telegram.chatId;
 
 async function sendMessage(text, innerChats) {
   try {

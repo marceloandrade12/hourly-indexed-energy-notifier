@@ -1,14 +1,12 @@
 import csv2json from "csvjson-csv2json";
-import dotenv from "dotenv";
 import fs from "fs";
+import { config } from "./config.js";
 import { getLogger } from "./logger.js";
 
 const log = getLogger();
 
-dotenv.config();
-
-const TARIFF = process.env.TARIFF;
-const OPTION = process.env.OPTION;
+const TARIFF = config.tariff.name;
+const OPTION = config.tariff.option;
 
 /**
  * Load and parse CSV file into JSON
