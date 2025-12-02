@@ -51,6 +51,10 @@ pollingLoop(async (msg, chat) => {
     log.info(`[BOT]: Sending help message to chat ${chat}`);
     return sendHelpMessage([chat]);
   }
+
+  if (msg.toLowerCase() === "/atualizar" || msg.toLowerCase() === "/update") {
+    return await fetcher.downloadCsv(CSV_URL, CACHE_PATH);
+  }
 });
 
 async function runHourlyCheck(chatId = undefined) {
@@ -92,9 +96,9 @@ async function startup() {
     log.error(`[ERROR]: startup - ${err.message}`);
   }
 
-  // Schedule daily CSV download at 22:00 every day
+  // Schedule daily CSV download at 16:00 every day
   cron.schedule(
-    "0 22 * * *",
+    "0 16 * * *",
     async () => {
       try {
         log.info(`[LOG]: startup - Daily CSV download started`);

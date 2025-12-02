@@ -88,6 +88,7 @@ const sendHelpMessage = (chatId = null) => {
     `/preco - Ver preço e custos atuais\n` +
     `/hoje - Ver preços do dia\n` +
     `/amanha - Ver preços de amanhã\n` +
+    `/atualizar - Atualizar o ficheiro CSV\n` +
     `/ajuda - Mostrar esta mensagem de ajuda`;
   return telegram.sendMessage(text, chatId);
 };
