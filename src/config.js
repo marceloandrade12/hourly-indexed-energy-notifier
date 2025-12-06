@@ -57,4 +57,8 @@ export const config = {
 
   // Devices configuration
   devices: parseDevices(),
+
+  // Price thresholds
+  lowPrice: parseFloat(process.env.LOW_PRICE) || 0.1,
+  highPrice: parseFloat(process.env.HIGH_PRICE) || 0.1599,
 };

@@ -15,6 +15,9 @@ async function sendMessage(text, innerChats) {
     for (const chat of innerChat) {
       // Prepare and send the request to Telegram API
       const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
+
+      text += `\n\n /help - Ver comandos disponíveis`;
+
       // Use URLSearchParams to encode the body
       const body = new URLSearchParams({
         chat_id: chat?.toString().trim(),

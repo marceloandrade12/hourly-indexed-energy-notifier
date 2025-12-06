@@ -1,9 +1,30 @@
+import { config } from "./config.js";
 import { calculateCosts } from "./devices.js";
 import telegram from "./telegram.js";
 import { getTodayDateString, getTomorrowDateString } from "./utils.js";
 
-const lowPrice = 0.1;
-const highPrice = 0.1599;
+const lowPrice = config.lowPrice;
+const highPrice = config.highPrice;
+
+const priceEmoji = (price) => {
+  if (price < lowPrice) {
+    return "✅";
+  } else if (price < highPrice) {
+    return "🆗";
+  } else {
+    return "⚠️";
+  }
+};
+
+const priceEmojiAndText = (price) => {
+  if (price < lowPrice) {
+    return priceEmoji(price) + " Preço baixo";
+  } else if (price < highPrice) {
+    return priceEmoji(price) + " Preço normal";
+  } else {
+    return priceEmoji(price) + " Preço alto";
+  }
+};
 
 const getTextFromPrices = (prices) => {
   let text = "";
@@ -11,7 +32,7 @@ const getTextFromPrices = (prices) => {
   for (const [index, price] of Object.entries(prices)) {
     if (price !== null && price !== undefined && !isNaN(price)) {
       text += `\n`;
-      text += price < lowPrice ? "✅" : price < highPrice ? "🆗" : "⚠️";
+      text += priceEmoji(price);
       text += `  Preço às ${index}:00 - ${price} € / kWh`;
     }
   }
@@ -52,13 +73,7 @@ const sendPriceNotFoundMessage = (date, hour, chatId = null) => {
 
 const sendPriceFoundMessage = (hour, price, chatId = null) => {
   let text = "";
-  if (price < lowPrice) {
-    text += "✅ Preço baixo! \n\n";
-  } else if (price < highPrice) {
-    text += "🆗 Preço normal.\n\n";
-  } else {
-    text += "⚠️ Preço alto! \n\n";
-  }
+  text += priceEmojiAndText(price) + " \n\n";
   text += `⚡ Preço agora ${hour}:00 - <b>${price} € / kWh</b>`;
 
   // add devices cost message
@@ -88,8 +103,7 @@ const sendHelpMessage = (chatId = null) => {
     `/preco - Ver preço e custos atuais\n` +
     `/hoje - Ver preços do dia\n` +
     `/amanha - Ver preços de amanhã\n` +
-    `/atualizar - Atualizar o ficheiro CSV\n` +
-    `/ajuda - Mostrar esta mensagem de ajuda`;
+    `/atualizar - Atualizar o ficheiro CSV`;
   return telegram.sendMessage(text, chatId);
 };
 
