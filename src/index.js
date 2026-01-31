@@ -7,8 +7,8 @@ import {
   sendCsvDownloadErrorMessage,
   sendErrorMessage,
   sendHelpMessage,
-  sendPriceFoundMessage,
   sendPriceNotFoundMessage,
+  sendPricesFoundMessage,
   sendTodayPricesMessage,
   sendTomorrowPricesMessage,
 } from "./message.js";
@@ -65,15 +65,16 @@ async function runHourlyCheck(chatId = undefined) {
     log.info(`[LOG]: runHourlyCheck - json parsed successfully`);
 
     // Extract the price for the current date and hour
-    const price = parser.extractPrice(json, today, hour);
+    // const price = parser.extractPrice(json, today, hour);
+    const prices = parser.extractPricesForHour(json, today, hour);
 
-    if (price == null) {
+    if (prices == null) {
       await sendPriceNotFoundMessage(today, hour);
       return;
     }
 
-    log.info(`[LOG]: runHourlyCheck - Price now (${hour}:00): ${price} €/kWh`);
-    await sendPriceFoundMessage(hour, price, chatId);
+    log.info(`[LOG]: runHourlyCheck - Price now (${hour}:00): ${prices} €/kWh`);
+    await sendPricesFoundMessage(hour, prices, chatId);
   } catch (err) {
     log.error(`[ERROR]: runHourlyCheck - ${err.message}`);
     await sendErrorMessage(err.message, chatId);
@@ -93,7 +94,7 @@ async function startup() {
 
   // Schedule daily CSV download at 16:00 every day
   cron.schedule(
-    "0 16 * * *",
+    "0 13 * * *",
     async () => {
       try {
         log.info(`[LOG]: startup - Daily CSV download started`);

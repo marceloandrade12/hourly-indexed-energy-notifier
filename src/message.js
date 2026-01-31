@@ -87,6 +87,31 @@ const sendPriceFoundMessage = (hour, price, chatId = null) => {
   return telegram.sendMessage(text, chatId);
 };
 
+const sendPricesFoundMessage = (hour, prices, chatId = null) => {
+  const averagePrice =
+    prices.reduce((a, b) => Number(a) + Number(b), 0) / prices.length;
+
+  let text = "";
+
+  text += priceEmojiAndText(averagePrice) + " \n";
+
+  prices.map((price, index) => {
+    const minutes = (index * 15).toString().padStart(2, "0");
+    text += `\n⚡ Preço agora ${hour}:${minutes} - <b>${price} € / kWh</b>`;
+  });
+
+  text += `\n\n⚡ <b>Preço médio:  ${averagePrice} € / kWh</b>`;
+
+  text += `\n\n💡 <b>Custo estimado para 1 hora de uso:</b>\n`;
+
+  const costs = calculateCosts(averagePrice);
+  for (const device of costs) {
+    text += `\n${device.name} custará <b>${device.cost.toFixed(2)} €</b>.`;
+  }
+
+  return telegram.sendMessage(text, chatId);
+};
+
 const sendErrorMessage = (message, chatId = null) => {
   const text = `❌ Erro: ${message}`;
   return telegram.sendMessage(text, chatId);
@@ -114,6 +139,7 @@ export {
   sendHelpMessage,
   sendPriceFoundMessage,
   sendPriceNotFoundMessage,
+  sendPricesFoundMessage,
   sendTodayPricesMessage,
   sendTomorrowPricesMessage,
 };
