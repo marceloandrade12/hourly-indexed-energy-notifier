@@ -43,7 +43,7 @@ const getTextFromPrices = (prices) => {
 const sendTomorrowPricesMessage = (
   pricesForTomorrow,
   beginText,
-  chatId = null
+  chatId = null,
 ) => {
   const tomorrow = getTomorrowDateString();
   let text = `${beginText} Para amanhã (${tomorrow}):\n`;
@@ -62,7 +62,7 @@ const sendFileUpdatedMessage = (pricesForTomorrow, chatId = null) => {
   return sendTomorrowPricesMessage(
     pricesForTomorrow,
     "📥 O ficheiro CSV foi atualizado com sucesso. \n",
-    chatId
+    chatId,
   );
 };
 
@@ -88,8 +88,9 @@ const sendPriceFoundMessage = (hour, price, chatId = null) => {
 };
 
 const sendPricesFoundMessage = (hour, prices, chatId = null) => {
-  const averagePrice =
-    prices.reduce((a, b) => Number(a) + Number(b), 0) / prices.length;
+  const averagePrice = (
+    prices.reduce((a, b) => Number(a) + Number(b), 0) / prices.length
+  ).toFixed(5);
 
   let text = "";
 
