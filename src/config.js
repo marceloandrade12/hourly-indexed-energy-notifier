@@ -61,4 +61,7 @@ export const config = {
   // Price thresholds
   lowPrice: parseFloat(process.env.LOW_PRICE) || 0.1,
   highPrice: parseFloat(process.env.HIGH_PRICE) || 0.1599,
+
+  // Fixed price for comparison
+  currentFixedPrice: parseFloat(process.env.CURRENT_FIXED_PRICE) || 0.1337,
 };

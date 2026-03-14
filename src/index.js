@@ -47,7 +47,7 @@ pollingLoop(async (msg, chat) => {
   if (msg.toLowerCase() === "/atualizar" || msg.toLowerCase() === "/update") {
     return await fetcher.downloadCsv(
       config.csv.sourceUrl,
-      config.csv.cachePath
+      config.csv.cachePath,
     );
   }
 });
@@ -86,8 +86,8 @@ async function startup() {
   try {
     // Download the CSV file to cache path
     await fetcher.downloadCsv(config.csv.sourceUrl, config.csv.cachePath);
-    // Run the hourly check immediately after download
-    await runHourlyCheck();
+    // // Run the hourly check immediately after download
+    // await runHourlyCheck();
   } catch (err) {
     log.error(`[ERROR]: startup - ${err.message}`);
   }
@@ -104,18 +104,19 @@ async function startup() {
         await sendCsvDownloadErrorMessage(err.message);
       }
     },
-    { timezone: config.timezone }
+    { timezone: config.timezone },
   );
 
-  // Schedule hourly price check at the start of every hour
-  cron.schedule(
-    "0 * * * *",
-    async () => {
-      log.info(`[LOG]: startup - Scheduled hourly price check started`);
-      await runHourlyCheck();
-    },
-    { timezone: config.timezone }
-  );
+  // Disabled for now
+  // // Schedule hourly price check at the start of every hour
+  // cron.schedule(
+  //   "0 * * * *",
+  //   async () => {
+  //     log.info(`[LOG]: startup - Scheduled hourly price check started`);
+  //     await runHourlyCheck();
+  //   },
+  //   { timezone: config.timezone }
+  // );
 }
 
 startup();

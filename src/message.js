@@ -5,6 +5,25 @@ import { getTodayDateString, getTomorrowDateString } from "./utils.js";
 
 const lowPrice = config.lowPrice;
 const highPrice = config.highPrice;
+const fixedPrice = config.currentFixedPrice;
+
+/**
+ * Returns a formatted string showing the difference between indexed and fixed price
+ * @param {number} price - The indexed price
+ * @returns {string} Formatted difference string
+ */
+const priceDiffText = (price) => {
+  if (!fixedPrice) return "";
+  const diff = fixedPrice - price;
+  const diffFormatted = diff.toFixed(4);
+  if (diff < 0) {
+    return ` (Fixo: <b>${diffFormatted}€</b>)`;
+  } else if (diff > 0) {
+    return ` (Fixo: <b>+${diffFormatted}€</b>)`;
+  } else {
+    return ` (Fixo: <b>0.0000€</b> )`;
+  }
+};
 
 const priceEmoji = (price) => {
   if (price < lowPrice) {
@@ -33,8 +52,13 @@ const getTextFromPrices = (prices) => {
     if (price !== null && price !== undefined && !isNaN(price)) {
       text += `\n`;
       text += priceEmoji(price);
-      text += `  Preço às ${index}:00 - ${price} € / kWh`;
+      text += ` ${index}h - ${price}€ `;
+      text += priceDiffText(price);
     }
+  }
+
+  if (fixedPrice) {
+    text += `\n\n📌 Preço fixo: <b>${fixedPrice}€</b>`;
   }
 
   return text;
@@ -74,15 +98,20 @@ const sendPriceNotFoundMessage = (date, hour, chatId = null) => {
 const sendPriceFoundMessage = (hour, price, chatId = null) => {
   let text = "";
   text += priceEmojiAndText(price) + " \n\n";
-  text += `⚡ Preço agora ${hour}:00 - <b>${price} € / kWh</b>`;
+  text += `⚡ ${hour}:00 - <b>${price}€ / kWh</b>`;
+  text += priceDiffText(price);
+
+  if (fixedPrice) {
+    text += `\n📌 Preço fixo: <b>${fixedPrice}€</b>`;
+  }
 
   // add devices cost message
 
   text += `\n\n💡 <b>Custo estimado para 1 hora de uso:</b>\n`;
 
-  const costs = calculateCosts(price);
+  const costs = calculateCosts(price, fixedPrice);
   for (const device of costs) {
-    text += `\n${device.name} custará <b>${device.cost.toFixed(2)} €</b>.`;
+    text += `\n${device.name} custará <b>${device.cost.toFixed(2)}€</b>.`;
   }
   return telegram.sendMessage(text, chatId);
 };
@@ -98,16 +127,22 @@ const sendPricesFoundMessage = (hour, prices, chatId = null) => {
 
   prices.map((price, index) => {
     const minutes = (index * 15).toString().padStart(2, "0");
-    text += `\n⚡ Preço agora ${hour}:${minutes} - <b>${price} € / kWh</b>`;
+    text += `\n⚡${hour}:${minutes} - <b>${price}€</b>`;
+    text += priceDiffText(price);
   });
 
-  text += `\n\n⚡ <b>Preço médio:  ${averagePrice} € / kWh</b>`;
+  text += `\n\n⚡ <b>Média: ${averagePrice}€ </b>`;
+  text += priceDiffText(averagePrice);
+
+  if (fixedPrice) {
+    text += `\n📌 Preço fixo: <b>${fixedPrice}€</b>`;
+  }
 
   text += `\n\n💡 <b>Custo estimado para 1 hora de uso:</b>\n`;
 
-  const costs = calculateCosts(averagePrice);
+  const costs = calculateCosts(averagePrice, fixedPrice);
   for (const device of costs) {
-    text += `\n${device.name} custará <b>${device.cost.toFixed(2)} €</b>.`;
+    text += `\n${device.name}: <b>${device.cost.toFixed(2)}€</b> (<b>${device.costFixed.toFixed(2)}€</b>).`;
   }
 
   return telegram.sendMessage(text, chatId);
