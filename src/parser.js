@@ -1,14 +1,12 @@
 import csv2json from "csvjson-csv2json";
-import dotenv from "dotenv";
 import fs from "fs";
+import { config } from "./config.js";
 import { getLogger } from "./logger.js";
 
 const log = getLogger();
 
-dotenv.config();
-
-const TARIFF = process.env.TARIFF;
-const OPTION = process.env.OPTION;
+const TARIFF = config.tariff.name;
+const OPTION = config.tariff.option;
 
 /**
  * Load and parse CSV file into JSON
@@ -98,6 +96,74 @@ const extractPrice = (rows, today, hour) => {
   return roundedAveragePrice;
 };
 
+/**
+ * Extract prices for given date and hour - 1 hour has 4 periods of 15 minutes
+ * @param {Array<Object>} rows
+ * @param {string} today
+ * @returns {Array<string|null>}
+ */
+const extractPricesForHour = (rows, today, hour) => {
+  log.info(
+    `[LOG]: extractPricesForHour - Extracting prices for ${today} ${hour}:00`
+  );
+  const hourStr = hour.toString().padStart(2, "0");
+
+  const tariffRows = rows.filter((r) => r.tarifario === TARIFF);
+
+  log.info(
+    `[LOG]: extractPricesForHour - Found ${tariffRows.length} rows for provider ${TARIFF}`
+  );
+
+  const optionRows = tariffRows.filter((r) => r.opcao === OPTION);
+
+  log.info(
+    `[LOG]: extractPricesForHour - Found ${optionRows.length} rows for option ${OPTION}`
+  );
+
+  const todayRows = optionRows.filter((r) => r.dia === today);
+
+  log.info(
+    `[LOG]: extractPricesForHour - Found ${todayRows.length} rows for date ${today}`
+  );
+
+  const currentHourRows = todayRows.filter((r) =>
+    r.intervalo.startsWith(`[${hourStr}:`)
+  );
+
+  log.info(
+    `[LOG]: extractPricesForHour - Found ${currentHourRows.length} rows for hour ${hour}:00`
+  );
+
+  const pricesForCurrentHour = currentHourRows.map((r) =>
+    parseFloat(r.col.replace(",", "."))
+  );
+
+  if (pricesForCurrentHour.length === 0) {
+    console.log(
+      `[WARN]: extractPricesForHour - No price found for ${today} at ${hour}:00`
+    );
+    return [null, null, null, null];
+  }
+
+  const roundedPrices = pricesForCurrentHour.map((price) =>
+    isNaN(price) ? null : price.toFixed(5)
+  );
+
+  log.info(
+    `[LOG]: extractPricesForHour - Prices for ${today} at ${hour}:00 are ${roundedPrices.join(
+      ", "
+    )} €/kWh`
+  );
+
+  return roundedPrices;
+};
+
+/**
+ * Extract prices for the entire day
+ * @param {Array<Object>} rows
+ * @param {string} today
+ * @returns {Object}
+ */
 const extractTodayPrices = (rows, today) => {
   log.info(`[LOG]: extractTodayPrices - Extracting prices for ${today}`);
   const tariffRows = rows.filter((r) => r.tarifario === TARIFF);
@@ -166,4 +232,9 @@ const extractTodayPrices = (rows, today) => {
   return prices;
 };
 
-export default { extractPrice, extractTodayPrices, loadAndParse };
+export default {
+  extractPrice,
+  extractTodayPrices,
+  loadAndParse,
+  extractPricesForHour,
+};
