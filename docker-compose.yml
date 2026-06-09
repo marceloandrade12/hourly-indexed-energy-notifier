@@ -1,0 +1,12 @@
+services:
+  hourly-indexed-energy-notifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: hourly-indexed-energy-notifier
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
