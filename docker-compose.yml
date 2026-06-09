@@ -8,5 +8,15 @@ services:
 
     restart: unless-stopped
 
-    env_file:
-      - .env
+    environment:
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      CSV_URL: ${CSV_URL}
+      CACHE_PATH: ${CACHE_PATH}
+      TIMEZONE: ${TIMEZONE}
+      TARIFF: ${TARIFF}
+      OPTION: ${OPTION}
+      DEVICES: ${DEVICES}
+      LOW_PRICE: ${LOW_PRICE}
+      HIGH_PRICE: ${HIGH_PRICE}
+      CURRENT_FIXED_PRICE: ${CURRENT_FIXED_PRICE}
